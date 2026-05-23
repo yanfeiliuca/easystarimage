@@ -1,4 +1,4 @@
-name = "easystarimage-api"
+name = "easystarimage"
 main = "api/generate.js"
 compatibility_date = "2025-05-23"
 

@@ -52,11 +52,35 @@ body {
 
 /* ── Container ────────────────────────────────────────────────────────────── */
 .container {
-    max-width: 520px;
+    max-width: 980px;
     width: 100%;
     margin: 0 auto;
-    padding: 0 1.25rem;
+    padding: 0 1.5rem;
     flex: 1;
+}
+
+/* ── Two-column Grid ──────────────────────────────────────────────────────── */
+.app-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+    padding-bottom: 3rem;
+}
+
+.panel-result {
+    position: sticky;
+    top: 1.5rem;
+}
+
+/* ── Mobile: single column ────────────────────────────────────────────────── */
+@media (max-width: 680px) {
+    .app-grid {
+        grid-template-columns: 1fr;
+    }
+    .panel-result {
+        position: static;
+    }
 }
 
 /* ── Template Card ────────────────────────────────────────────────────────── */
@@ -150,7 +174,7 @@ body {
     border-color: var(--gray-200);
 }
 
-/* ── Empty State ──────────────────────────────────────────────────────────── */
+/* ── Empty State (slot) ───────────────────────────────────────────────────── */
 .slot-empty {
     display: flex;
     flex-direction: column;
@@ -303,14 +327,42 @@ body {
     margin-top: 0.65rem;
 }
 
-/* ── Result Section ───────────────────────────────────────────────────────── */
+/* ── Result Panel (right side, always visible) ────────────────────────────── */
 .result-section {
-    margin-bottom: 2rem;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--gray-100);
 }
 
+/* ── Result: Empty State ──────────────────────────────────────────────────── */
+.result-empty {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--gray-400);
+}
+
+.result-empty-icon {
+    color: var(--gray-200);
+    margin-bottom: 1.25rem;
+}
+
+.result-empty-text {
+    font-size: 0.85rem;
+    color: var(--gray-400);
+    line-height: 1.8;
+}
+
+/* ── Result: Loading ──────────────────────────────────────────────────────── */
 .result-status {
     text-align: center;
     padding: 2rem 1rem;
+    width: 100%;
 }
 
 .spinner {
@@ -330,12 +382,23 @@ body {
     color: var(--gray-600);
 }
 
-.result-image-area { text-align: center; }
+/* ── Result: Image Area ───────────────────────────────────────────────────── */
+.result-image-area {
+    text-align: center;
+    width: 100%;
+}
 
 .result-image-area img {
-    max-width: 100%;
-    border-radius: var(--radius);
-    margin-bottom: 1rem;
+    width: 100%;
+    display: block;
+    border-radius: 0;
+    margin-bottom: 0;
+}
+
+.result-image-area .result-actions {
+    padding: 0.85rem;
+    background: var(--white);
+    border-top: 1px solid var(--gray-200);
 }
 
 .result-actions {
@@ -345,9 +408,11 @@ body {
     flex-wrap: wrap;
 }
 
+/* ── Result: Error ────────────────────────────────────────────────────────── */
 .result-error {
     text-align: center;
     padding: 2rem 1rem;
+    width: 100%;
 }
 
 .error-text {
@@ -370,7 +435,7 @@ body {
 /* ── Utilities ────────────────────────────────────────────────────────────── */
 .hidden { display: none !important; }
 
-/* ── Mobile (base styles are mobile-first) ────────────────────────────────── */
+/* ── Desktop breakpoint ───────────────────────────────────────────────────── */
 @media (min-width: 640px) {
     .hero { padding: 4rem 1.5rem 2.5rem; }
     .hero-title { font-size: 2.4rem; }

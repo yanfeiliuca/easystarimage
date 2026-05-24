@@ -13,7 +13,7 @@
     var slotInputs = document.querySelectorAll('.slot-input');
     var generateBtn = document.getElementById('generateBtn');
 
-    var resultSection  = document.getElementById('resultSection');
+    var resultEmpty    = document.getElementById('resultEmpty');
     var resultStatus   = document.getElementById('resultStatus');
     var spinner        = document.getElementById('spinner');
     var statusText     = document.getElementById('statusText');
@@ -203,7 +203,7 @@
         if (isGenerating) return; // 防止重复点击
 
         setGeneratingState(true);
-        resultSection.classList.remove('hidden');
+        resultEmpty.classList.add('hidden');
         resultStatus.classList.remove('hidden');
         spinner.classList.remove('hidden');
         resultImgArea.classList.add('hidden');
@@ -261,7 +261,7 @@
         if (isGenerating) return;
 
         setGeneratingState(true);
-        resultSection.classList.remove('hidden');
+        resultEmpty.classList.add('hidden');
         resultStatus.classList.remove('hidden');
         spinner.classList.remove('hidden');
         resultImgArea.classList.add('hidden');
@@ -283,7 +283,14 @@
         resultStatus.classList.add('hidden');
         spinner.classList.add('hidden');
         resultImgArea.classList.remove('hidden');
+        // img 标签天然支持跨域显示，不需要 crossorigin 属性
         resultImage.src = imageUrl;
+        // 若直连失败（URL 需要签名/已过期），回退到 Worker 代理
+        resultImage.onerror = function () {
+            if (resultImage.src.indexOf('/api/proxy') === -1) {
+                resultImage.src = '/api/proxy?url=' + encodeURIComponent(imageUrl);
+            }
+        };
         downloadBtn.onclick = function () { downloadImage(imageUrl); };
     }
 
@@ -359,17 +366,26 @@
     }
 
     function downloadImage(url) {
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = 'easystarimage_chanel.jpg';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        // 跨域图片无法直接 <a download>，通过 Worker 代理拉取后转 blob 下载
+        var proxyUrl = '/api/proxy?url=' + encodeURIComponent(url);
+        fetch(proxyUrl)
+            .then(function (r) { return r.blob(); })
+            .then(function (blob) {
+                var blobUrl = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = 'easystarimage_chanel.jpg';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(function () { URL.revokeObjectURL(blobUrl); }, 1000);
+            })
+            .catch(function () { window.open(url, '_blank'); }); // 兜底：新标签打开
     }
 
     function resetResult() {
-        resultSection.classList.add('hidden');
-        resultStatus.classList.remove('hidden');
+        resultEmpty.classList.remove('hidden');
+        resultStatus.classList.add('hidden');
         spinner.classList.add('hidden');
         resultImgArea.classList.add('hidden');
         resultError.classList.add('hidden');

@@ -164,7 +164,7 @@ const HTML = `<!DOCTYPE html>
 
             <!-- 结果图 -->
             <div class="result-image-area hidden" id="resultImageArea">
-                <img id="resultImage" alt="生成结果" crossorigin="anonymous">
+                <img id="resultImage" alt="生成结果">
                 <div class="result-actions">
                     <button class="btn-download" id="downloadBtn">保存图片</button>
                     <button class="btn-ghost" id="regenerateBtn">重新生成</button>
@@ -552,11 +552,6 @@ body {
     margin-top: 0.65rem;
 }
 
-/* ── Result Section ───────────────────────────────────────────────────────── */
-.result-section {
-    margin-bottom: 2rem;
-}
-
 .result-status {
     text-align: center;
     padding: 2rem 1rem;
@@ -931,7 +926,14 @@ const JS = `/**
         resultStatus.classList.add('hidden');
         spinner.classList.add('hidden');
         resultImgArea.classList.remove('hidden');
+        // 直接设置 src，img 标签天然支持跨域显示
         resultImage.src = imageUrl;
+        // 如果直连失败（URL 需要签名/已过期），回退到 Worker 代理
+        resultImage.onerror = function () {
+            if (resultImage.src.indexOf('/api/proxy') === -1) {
+                resultImage.src = '/api/proxy?url=' + encodeURIComponent(imageUrl);
+            }
+        };
         downloadBtn.onclick = function () { downloadImage(imageUrl); };
     }
 
@@ -1007,12 +1009,21 @@ const JS = `/**
     }
 
     function downloadImage(url) {
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = 'easystarimage_chanel.jpg';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        // 跨域图片无法直接 <a download>，通过 Worker 代理拉取后转 blob 下载
+        var proxyUrl = '/api/proxy?url=' + encodeURIComponent(url);
+        fetch(proxyUrl)
+            .then(function (r) { return r.blob(); })
+            .then(function (blob) {
+                var blobUrl = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = 'easystarimage_chanel.jpg';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(function () { URL.revokeObjectURL(blobUrl); }, 1000);
+            })
+            .catch(function () { window.open(url, '_blank'); }); // 兜底：新标签打开
     }
 
     function resetResult() {
@@ -1257,6 +1268,28 @@ async function handleRequest(request, env) {
             return jsonResponse(result);
         } catch (err) {
             return jsonResponse({ error: err.message }, 500);
+        }
+    }
+
+    // GET /api/proxy?url=... — 代理外部图片，解决跨域下载问题
+    if (path === '/api/proxy' && request.method === 'GET') {
+        const imageUrl = url.searchParams.get('url');
+        if (!imageUrl) return jsonResponse({ error: 'Missing url param' }, 400);
+        try {
+            const imgRes = await fetch(imageUrl);
+            if (!imgRes.ok) return jsonResponse({ error: 'Upstream image not available' }, 502);
+            const contentType = imgRes.headers.get('Content-Type') || 'image/jpeg';
+            return new Response(imgRes.body, {
+                status: 200,
+                headers: {
+                    'Content-Type': contentType,
+                    'Content-Disposition': 'attachment; filename="easystarimage_chanel.jpg"',
+                    'Cache-Control': 'private, max-age=300',
+                    ...corsHeaders(),
+                },
+            });
+        } catch (err) {
+            return jsonResponse({ error: 'Proxy failed: ' + err.message }, 502);
         }
     }
 

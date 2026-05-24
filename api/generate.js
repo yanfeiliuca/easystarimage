@@ -19,9 +19,10 @@
 
 // ── 配置 ──────────────────────────────────────────────────────────────────────
 const EVOLINK_BASE = 'https://api.evolink.ai';
-const MODEL = 'gemini-3.1-flash-image-preview';
-const QUALITY = '2K';
-const SIZE = '3:4';
+const MODEL = 'gpt-image-2';
+const QUALITY = 'medium';     // low / medium / high（high 约是 medium 的 4 倍价格）
+const SIZE = '3:4';           // 比例，配合 RESOLUTION 使用
+const RESOLUTION = '1K';      // 1K / 2K / 4K
 
 // ── 静态文件 ───────────────────────────────────────────────────────────────────
 
@@ -42,120 +43,144 @@ const HTML = `<!DOCTYPE html>
 </header>
 
 <main class="container">
+<div class="app-grid">
 
-    <!-- 模板展示 -->
-    <section class="template-card" id="templateSection">
-        <div class="template-badge">首发模板</div>
-        <div class="template-info">
-            <h2 class="template-name">Chanel · 法式极简风</h2>
-            <p class="template-desc">香奈儿品牌美学，巴黎公寓午后窗光，珍珠与斜纹软呢的永恒优雅。</p>
-        </div>
-        <div class="template-tags">
-            <span>黑白经典配色</span>
-            <span>无妆感底妆</span>
-            <span>法式自然窗光</span>
-            <span>珍珠配饰</span>
-        </div>
-    </section>
+    <!-- ── 左栏：输入 ── -->
+    <div class="panel-input">
 
-    <!-- 上传区：三张照片 -->
-    <section class="upload-section" id="uploadSection">
-        <p class="upload-section-hint">上传 1-3 张照片，多角度照片可大幅提升面部保真度</p>
+        <!-- 模板展示 -->
+        <section class="template-card" id="templateSection">
+            <div class="template-badge">首发模板</div>
+            <div class="template-info">
+                <h2 class="template-name">Chanel · 法式极简风</h2>
+                <p class="template-desc">香奈儿品牌美学，巴黎公寓午后窗光，珍珠与斜纹软呢的永恒优雅。</p>
+            </div>
+            <div class="template-tags">
+                <span>黑白经典配色</span>
+                <span>无妆感底妆</span>
+                <span>法式自然窗光</span>
+                <span>珍珠配饰</span>
+            </div>
+        </section>
 
-        <div class="slots-grid" id="slotsGrid">
-            <!-- 插槽 1 -->
-            <div class="slot" data-slot="0">
-                <input type="file" class="slot-input" accept="image/jpeg,image/png,image/webp" hidden>
-                <div class="slot-empty">
-                    <div class="slot-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                            <polyline points="17 8 12 3 7 8"/>
-                            <line x1="12" y1="3" x2="12" y2="15"/>
-                        </svg>
+        <!-- 上传区：三张照片 -->
+        <section class="upload-section" id="uploadSection">
+            <p class="upload-section-hint">上传 1-3 张照片，多角度照片可大幅提升面部保真度</p>
+            <div class="slots-grid" id="slotsGrid">
+                <!-- 插槽 1 -->
+                <div class="slot" data-slot="0">
+                    <input type="file" class="slot-input" accept="image/jpeg,image/png,image/webp" hidden>
+                    <div class="slot-empty">
+                        <div class="slot-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                        </div>
+                        <p class="slot-label">正面照</p>
+                        <p class="slot-tip">点击 / 拖拽 / 粘贴</p>
                     </div>
-                    <p class="slot-label">正面照</p>
-                    <p class="slot-tip">点击 / 拖拽 / 粘贴</p>
-                </div>
-                <div class="slot-filled hidden">
-                    <img class="slot-preview" alt="">
-                    <button class="slot-remove" title="移除">&times;</button>
-                </div>
-            </div>
-
-            <!-- 插槽 2 -->
-            <div class="slot" data-slot="1">
-                <input type="file" class="slot-input" accept="image/jpeg,image/png,image/webp" hidden>
-                <div class="slot-empty">
-                    <div class="slot-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                            <polyline points="17 8 12 3 7 8"/>
-                            <line x1="12" y1="3" x2="12" y2="15"/>
-                        </svg>
+                    <div class="slot-filled hidden">
+                        <img class="slot-preview" alt="">
+                        <button class="slot-remove" title="移除">&times;</button>
                     </div>
-                    <p class="slot-label">侧面 / 半身</p>
-                    <p class="slot-tip">点击 / 拖拽 / 粘贴</p>
                 </div>
-                <div class="slot-filled hidden">
-                    <img class="slot-preview" alt="">
-                    <button class="slot-remove" title="移除">&times;</button>
-                </div>
-            </div>
-
-            <!-- 插槽 3 -->
-            <div class="slot" data-slot="2">
-                <input type="file" class="slot-input" accept="image/jpeg,image/png,image/webp" hidden>
-                <div class="slot-empty">
-                    <div class="slot-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                            <polyline points="17 8 12 3 7 8"/>
-                            <line x1="12" y1="3" x2="12" y2="15"/>
-                        </svg>
+                <!-- 插槽 2 -->
+                <div class="slot" data-slot="1">
+                    <input type="file" class="slot-input" accept="image/jpeg,image/png,image/webp" hidden>
+                    <div class="slot-empty">
+                        <div class="slot-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                        </div>
+                        <p class="slot-label">侧面 / 半身</p>
+                        <p class="slot-tip">点击 / 拖拽 / 粘贴</p>
                     </div>
-                    <p class="slot-label">其他角度</p>
-                    <p class="slot-tip">点击 / 拖拽 / 粘贴</p>
+                    <div class="slot-filled hidden">
+                        <img class="slot-preview" alt="">
+                        <button class="slot-remove" title="移除">&times;</button>
+                    </div>
                 </div>
-                <div class="slot-filled hidden">
-                    <img class="slot-preview" alt="">
-                    <button class="slot-remove" title="移除">&times;</button>
+                <!-- 插槽 3 -->
+                <div class="slot" data-slot="2">
+                    <input type="file" class="slot-input" accept="image/jpeg,image/png,image/webp" hidden>
+                    <div class="slot-empty">
+                        <div class="slot-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                        </div>
+                        <p class="slot-label">其他角度</p>
+                        <p class="slot-tip">点击 / 拖拽 / 粘贴</p>
+                    </div>
+                    <div class="slot-filled hidden">
+                        <img class="slot-preview" alt="">
+                        <button class="slot-remove" title="移除">&times;</button>
+                    </div>
                 </div>
             </div>
-        </div>
+            <p class="upload-requirements" id="uploadRequirements">
+                正面照为必填。三张不同角度的照片能让 AI 更好保留你的面部结构，减少失真。
+            </p>
+        </section>
 
-        <p class="upload-requirements" id="uploadRequirements">
-            正面照为必填。三张不同角度的照片能让 AI 更好保留你的面部结构，减少失真。
-        </p>
-    </section>
+        <!-- 生成按钮 -->
+        <section class="action-section">
+            <button class="btn-generate" id="generateBtn" disabled>
+                开始生成我的法式大片
+            </button>
+            <p class="privacy-note">你的照片仅用于本次生成，不会公开或保存</p>
+        </section>
 
-    <!-- 生成按钮 -->
-    <section class="action-section">
-        <button class="btn-generate" id="generateBtn" disabled>
-            开始生成我的法式大片
-        </button>
-        <p class="privacy-note">你的照片仅用于本次生成，不会公开或保存</p>
-    </section>
+    </div><!-- /panel-input -->
 
-    <!-- 生成状态与结果 -->
-    <section class="result-section hidden" id="resultSection">
-        <div class="result-status" id="resultStatus">
-            <div class="spinner hidden" id="spinner"></div>
-            <p class="status-text" id="statusText">正在提交生成请求...</p>
-        </div>
-        <div class="result-image-area hidden" id="resultImageArea">
-            <img id="resultImage" alt="生成结果">
-            <div class="result-actions">
-                <button class="btn-download" id="downloadBtn">保存图片</button>
-                <button class="btn-ghost" id="regenerateBtn">重新生成</button>
+    <!-- ── 右栏：结果 ── -->
+    <div class="panel-result">
+        <div class="result-section" id="resultSection">
+
+            <!-- 空状态（初始） -->
+            <div class="result-empty" id="resultEmpty">
+                <div class="result-empty-icon">
+                    <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                </div>
+                <p class="result-empty-text">上传照片后点击「开始生成」<br>你的法式大片将出现在这里</p>
             </div>
-        </div>
-        <div class="result-error hidden" id="resultError">
-            <p class="error-text">生成失败，请稍后重试</p>
-            <button class="btn-ghost" id="retryBtn">重试</button>
-        </div>
-    </section>
 
+            <!-- 生成中 -->
+            <div class="result-status hidden" id="resultStatus">
+                <div class="spinner hidden" id="spinner"></div>
+                <p class="status-text" id="statusText">正在提交生成请求...</p>
+            </div>
+
+            <!-- 结果图 -->
+            <div class="result-image-area hidden" id="resultImageArea">
+                <img id="resultImage" alt="生成结果" crossorigin="anonymous">
+                <div class="result-actions">
+                    <button class="btn-download" id="downloadBtn">保存图片</button>
+                    <button class="btn-ghost" id="regenerateBtn">重新生成</button>
+                </div>
+            </div>
+
+            <!-- 错误 -->
+            <div class="result-error hidden" id="resultError">
+                <p class="error-text">生成失败，请稍后重试</p>
+                <button class="btn-ghost" id="retryBtn">重试</button>
+            </div>
+
+        </div>
+    </div><!-- /panel-result -->
+
+</div><!-- /app-grid -->
 </main>
 
 <footer class="footer">
@@ -221,11 +246,66 @@ body {
 
 /* ── Container ────────────────────────────────────────────────────────────── */
 .container {
-    max-width: 520px;
+    max-width: 980px;
     width: 100%;
     margin: 0 auto;
-    padding: 0 1.25rem;
+    padding: 0 1.5rem;
     flex: 1;
+}
+
+/* ── Two-column Grid ──────────────────────────────────────────────────────── */
+.app-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+    padding-bottom: 3rem;
+}
+
+.panel-result {
+    position: sticky;
+    top: 1.5rem;
+}
+
+/* ── Result Panel (right side, always visible) ────────────────────────────── */
+.result-section {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--gray-100);
+}
+
+/* ── Empty State ──────────────────────────────────────────────────────────── */
+.result-empty {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--gray-400);
+}
+
+.result-empty-icon {
+    color: var(--gray-200);
+    margin-bottom: 1.25rem;
+}
+
+.result-empty-text {
+    font-size: 0.85rem;
+    color: var(--gray-400);
+    line-height: 1.8;
+}
+
+/* ── Mobile: single column ────────────────────────────────────────────────── */
+@media (max-width: 680px) {
+    .app-grid {
+        grid-template-columns: 1fr;
+    }
+    .panel-result {
+        position: static;
+    }
 }
 
 /* ── Template Card ────────────────────────────────────────────────────────── */
@@ -499,12 +579,22 @@ body {
     color: var(--gray-600);
 }
 
-.result-image-area { text-align: center; }
+.result-image-area {
+    text-align: center;
+    width: 100%;
+}
 
 .result-image-area img {
-    max-width: 100%;
-    border-radius: var(--radius);
-    margin-bottom: 1rem;
+    width: 100%;
+    display: block;
+    border-radius: 0;
+    margin-bottom: 0;
+}
+
+.result-image-area .result-actions {
+    padding: 0.85rem;
+    background: var(--white);
+    border-top: 1px solid var(--gray-200);
 }
 
 .result-actions {
@@ -571,6 +661,7 @@ const JS = `/**
     var generateBtn = document.getElementById('generateBtn');
 
     var resultSection  = document.getElementById('resultSection');
+    var resultEmpty    = document.getElementById('resultEmpty');
     var resultStatus   = document.getElementById('resultStatus');
     var spinner        = document.getElementById('spinner');
     var statusText     = document.getElementById('statusText');
@@ -586,6 +677,10 @@ const JS = `/**
 
     // ── API 配置 ──────────────────────────────────────────────────────────
     var API_BASE = '/api';
+
+    // ── 任务状态追踪（防止重复提交）────────────────────────────────────────
+    var currentTaskId = null;   // 当前正在运行的 task ID
+    var isGenerating  = false;  // 是否正在生成中
 
     // ── 插槽交互：点击 ────────────────────────────────────────────────────
     slots.forEach(function (slot) {
@@ -728,14 +823,35 @@ const JS = `/**
 
     // ── 生成流程 ──────────────────────────────────────────────────────────
     generateBtn.addEventListener('click', startGeneration);
-    retryBtn.addEventListener('click', startGeneration);
-    regenerateBtn.addEventListener('click', startGeneration);
+
+    // 重试：优先恢复已有任务的轮询，而不是重新提交
+    retryBtn.addEventListener('click', function () {
+        if (currentTaskId && !isGenerating) {
+            resumePolling(currentTaskId);
+        } else {
+            startGeneration();
+        }
+    });
+
+    // 重新生成：清除旧任务，提交新任务
+    regenerateBtn.addEventListener('click', function () {
+        currentTaskId = null;
+        startGeneration();
+    });
+
+    function setGeneratingState(generating) {
+        isGenerating = generating;
+        generateBtn.disabled = generating || (filledCount() === 0);
+        regenerateBtn.disabled = generating;
+        retryBtn.disabled = generating;
+    }
 
     async function startGeneration() {
         if (filledCount() === 0) return;
+        if (isGenerating) return; // 防止重复点击
 
-        generateBtn.disabled = true;
-        resultSection.classList.remove('hidden');
+        setGeneratingState(true);
+        resultEmpty.classList.add('hidden');
         resultStatus.classList.remove('hidden');
         spinner.classList.remove('hidden');
         resultImgArea.classList.add('hidden');
@@ -771,48 +887,113 @@ const JS = `/**
             var taskId = submitData.task_id;
             if (!taskId) throw new Error('未获取到任务ID');
 
+            // 记录当前任务 ID，防止重复提交
+            currentTaskId = taskId;
+
             // 轮询
-            statusText.textContent = '正在生成中，预计需要1-2分钟...';
+            statusText.textContent = '任务已提交，正在生成中，预计需要1-2分钟...';
             var imageUrl = await pollTask(taskId);
 
-            // 展示结果
-            resultStatus.classList.add('hidden');
-            spinner.classList.add('hidden');
-            resultImgArea.classList.remove('hidden');
-            resultImage.src = imageUrl;
-
-            downloadBtn.onclick = function () { downloadImage(imageUrl); };
+            showResult(imageUrl);
 
         } catch (err) {
             console.error(err);
-            resultStatus.classList.add('hidden');
-            spinner.classList.add('hidden');
-            resultError.classList.remove('hidden');
+            showError();
         }
 
-        generateBtn.disabled = false;
+        setGeneratingState(false);
+    }
+
+    // 恢复对已有任务的轮询（重试时使用）
+    async function resumePolling(taskId) {
+        if (isGenerating) return;
+
+        setGeneratingState(true);
+        resultEmpty.classList.add('hidden');
+        resultStatus.classList.remove('hidden');
+        spinner.classList.remove('hidden');
+        resultImgArea.classList.add('hidden');
+        resultError.classList.add('hidden');
+        statusText.textContent = '正在重新连接，继续等待生成结果...';
+
+        try {
+            var imageUrl = await pollTask(taskId);
+            showResult(imageUrl);
+        } catch (err) {
+            console.error(err);
+            showError();
+        }
+
+        setGeneratingState(false);
+    }
+
+    function showResult(imageUrl) {
+        resultStatus.classList.add('hidden');
+        spinner.classList.add('hidden');
+        resultImgArea.classList.remove('hidden');
+        resultImage.src = imageUrl;
+        downloadBtn.onclick = function () { downloadImage(imageUrl); };
+    }
+
+    function showError() {
+        resultStatus.classList.add('hidden');
+        spinner.classList.add('hidden');
+        resultError.classList.remove('hidden');
+        // 如果有任务ID，提示用户可以重试而不是重新提交
+        if (currentTaskId) {
+            document.querySelector('.error-text').textContent =
+                '连接中断，任务可能仍在生成中，点击「重试」继续等待';
+        } else {
+            document.querySelector('.error-text').textContent = '生成失败，请稍后重试';
+        }
     }
 
     async function pollTask(taskId, timeoutSec) {
-        timeoutSec = timeoutSec || 180;
+        timeoutSec = timeoutSec || 240; // 延长到4分钟
         var deadline = Date.now() + timeoutSec * 1000;
+        var pollErrors = 0;            // 连续查询失败次数
+        var maxPollErrors = 5;         // 允许最多5次连续失败再放弃
 
         while (Date.now() < deadline) {
-            var res = await fetch(API_BASE + '/status/' + taskId);
-            if (!res.ok) throw new Error('状态查询失败');
+            try {
+                var res = await fetch(API_BASE + '/status/' + taskId);
 
-            var data = await res.json();
-            var status = data.status;
+                if (!res.ok) {
+                    pollErrors++;
+                    if (pollErrors >= maxPollErrors) throw new Error('状态查询持续失败');
+                    statusText.textContent = '网络波动，正在重试... (' + pollErrors + '/' + maxPollErrors + ')';
+                    await sleep(5000);
+                    continue;
+                }
 
-            if (status === 'completed') return data.image_url;
-            if (status === 'failed') throw new Error(data.error || '生成失败');
+                pollErrors = 0; // 成功就清零
+                var data = await res.json();
+                var status = data.status;
 
-            var progress = data.progress || 0;
-            statusText.textContent = '正在生成中... ' + progress + '%';
-            await sleep(3000);
+                if (status === 'completed') return data.image_url;
+                if (status === 'failed') throw new Error(data.error || '生成失败');
+
+                var elapsed = Math.round((Date.now() - (deadline - timeoutSec * 1000)) / 1000);
+                var progress = data.progress || 0;
+                statusText.textContent = progress > 0
+                    ? '正在生成中... ' + progress + '%（已等待 ' + elapsed + 's）'
+                    : '正在生成中，请耐心等待...（已等待 ' + elapsed + 's）';
+
+            } catch (err) {
+                // 只有明确的业务失败才直接抛出
+                if (err.message === '生成失败' || err.message === '状态查询持续失败') {
+                    throw err;
+                }
+                // 网络错误：计入错误次数，继续重试
+                pollErrors++;
+                if (pollErrors >= maxPollErrors) throw new Error('网络连接不稳定，请检查后重试');
+                statusText.textContent = '网络波动，正在重试... (' + pollErrors + '/' + maxPollErrors + ')';
+            }
+
+            await sleep(4000);
         }
 
-        throw new Error('生成超时，请重试');
+        throw new Error('生成超时，任务可能仍在运行，可点击「重试」继续等待');
     }
 
     // ── 工具函数 ──────────────────────────────────────────────────────────
@@ -835,8 +1016,8 @@ const JS = `/**
     }
 
     function resetResult() {
-        resultSection.classList.add('hidden');
-        resultStatus.classList.remove('hidden');
+        resultEmpty.classList.remove('hidden');
+        resultStatus.classList.add('hidden');
         spinner.classList.add('hidden');
         resultImgArea.classList.add('hidden');
         resultError.classList.add('hidden');
@@ -940,11 +1121,8 @@ async function submitEvoLinkTask(prompt, apiKey) {
             model: MODEL,
             prompt: prompt,
             size: SIZE,
+            resolution: RESOLUTION,
             quality: QUALITY,
-            model_params: {
-                image_search: true,
-                thinking_level: 'auto',
-            },
         }),
     });
 
@@ -958,7 +1136,7 @@ async function submitEvoLinkTask(prompt, apiKey) {
 }
 
 async function queryEvoLinkTask(taskId, apiKey) {
-    const res = await fetch(EVOLINK_BASE + '/v1/task/' + taskId, {
+    const res = await fetch(EVOLINK_BASE + '/v1/tasks/' + taskId, {
         headers: { 'Authorization': 'Bearer ' + apiKey },
     });
 
@@ -970,11 +1148,12 @@ async function queryEvoLinkTask(taskId, apiKey) {
     const status = data.status;
 
     if (status === 'completed') {
-        const results = data.data || data.results || [];
-        const url = results.length > 0
-            ? (results[0].url || results[0].image_url)
-            : (data.url || data.image_url);
-        return { status: 'completed', image_url: url };
+        // 兼容多种响应结构
+        const results = data.data || data.results || data.output?.data || [];
+        const first = Array.isArray(results) ? results[0] : results;
+        const url = (first && (first.url || first.image_url))
+            || data.url || data.image_url || data.output_url || null;
+        return { status: 'completed', image_url: url, _raw: data };
     }
 
     if (status === 'failed') {

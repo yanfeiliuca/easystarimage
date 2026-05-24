@@ -30,6 +30,10 @@
     // ── API 配置 ──────────────────────────────────────────────────────────
     var API_BASE = '/api';
 
+    // ── 任务状态追踪（防止重复提交）────────────────────────────────────────
+    var currentTaskId = null;   // 当前正在运行的 task ID
+    var isGenerating  = false;  // 是否正在生成中
+
     // ── 插槽交互：点击 ────────────────────────────────────────────────────
     slots.forEach(function (slot) {
         slot.addEventListener('click', function (e) {
@@ -171,13 +175,34 @@
 
     // ── 生成流程 ──────────────────────────────────────────────────────────
     generateBtn.addEventListener('click', startGeneration);
-    retryBtn.addEventListener('click', startGeneration);
-    regenerateBtn.addEventListener('click', startGeneration);
+
+    // 重试：优先恢复已有任务的轮询，而不是重新提交
+    retryBtn.addEventListener('click', function () {
+        if (currentTaskId && !isGenerating) {
+            resumePolling(currentTaskId);
+        } else {
+            startGeneration();
+        }
+    });
+
+    // 重新生成：清除旧任务，提交新任务
+    regenerateBtn.addEventListener('click', function () {
+        currentTaskId = null;
+        startGeneration();
+    });
+
+    function setGeneratingState(generating) {
+        isGenerating = generating;
+        generateBtn.disabled = generating || (filledCount() === 0);
+        regenerateBtn.disabled = generating;
+        retryBtn.disabled = generating;
+    }
 
     async function startGeneration() {
         if (filledCount() === 0) return;
+        if (isGenerating) return; // 防止重复点击
 
-        generateBtn.disabled = true;
+        setGeneratingState(true);
         resultSection.classList.remove('hidden');
         resultStatus.classList.remove('hidden');
         spinner.classList.remove('hidden');
@@ -214,48 +239,113 @@
             var taskId = submitData.task_id;
             if (!taskId) throw new Error('未获取到任务ID');
 
+            // 记录当前任务 ID，防止重复提交
+            currentTaskId = taskId;
+
             // 轮询
-            statusText.textContent = '正在生成中，预计需要1-2分钟...';
+            statusText.textContent = '任务已提交，正在生成中，预计需要1-2分钟...';
             var imageUrl = await pollTask(taskId);
 
-            // 展示结果
-            resultStatus.classList.add('hidden');
-            spinner.classList.add('hidden');
-            resultImgArea.classList.remove('hidden');
-            resultImage.src = imageUrl;
-
-            downloadBtn.onclick = function () { downloadImage(imageUrl); };
+            showResult(imageUrl);
 
         } catch (err) {
             console.error(err);
-            resultStatus.classList.add('hidden');
-            spinner.classList.add('hidden');
-            resultError.classList.remove('hidden');
+            showError();
         }
 
-        generateBtn.disabled = false;
+        setGeneratingState(false);
+    }
+
+    // 恢复对已有任务的轮询（重试时使用）
+    async function resumePolling(taskId) {
+        if (isGenerating) return;
+
+        setGeneratingState(true);
+        resultSection.classList.remove('hidden');
+        resultStatus.classList.remove('hidden');
+        spinner.classList.remove('hidden');
+        resultImgArea.classList.add('hidden');
+        resultError.classList.add('hidden');
+        statusText.textContent = '正在重新连接，继续等待生成结果...';
+
+        try {
+            var imageUrl = await pollTask(taskId);
+            showResult(imageUrl);
+        } catch (err) {
+            console.error(err);
+            showError();
+        }
+
+        setGeneratingState(false);
+    }
+
+    function showResult(imageUrl) {
+        resultStatus.classList.add('hidden');
+        spinner.classList.add('hidden');
+        resultImgArea.classList.remove('hidden');
+        resultImage.src = imageUrl;
+        downloadBtn.onclick = function () { downloadImage(imageUrl); };
+    }
+
+    function showError() {
+        resultStatus.classList.add('hidden');
+        spinner.classList.add('hidden');
+        resultError.classList.remove('hidden');
+        // 如果有任务ID，提示用户可以重试而不是重新提交
+        if (currentTaskId) {
+            document.querySelector('.error-text').textContent =
+                '连接中断，任务可能仍在生成中，点击「重试」继续等待';
+        } else {
+            document.querySelector('.error-text').textContent = '生成失败，请稍后重试';
+        }
     }
 
     async function pollTask(taskId, timeoutSec) {
-        timeoutSec = timeoutSec || 180;
+        timeoutSec = timeoutSec || 240; // 延长到4分钟
         var deadline = Date.now() + timeoutSec * 1000;
+        var pollErrors = 0;            // 连续查询失败次数
+        var maxPollErrors = 5;         // 允许最多5次连续失败再放弃
 
         while (Date.now() < deadline) {
-            var res = await fetch(API_BASE + '/status/' + taskId);
-            if (!res.ok) throw new Error('状态查询失败');
+            try {
+                var res = await fetch(API_BASE + '/status/' + taskId);
 
-            var data = await res.json();
-            var status = data.status;
+                if (!res.ok) {
+                    pollErrors++;
+                    if (pollErrors >= maxPollErrors) throw new Error('状态查询持续失败');
+                    statusText.textContent = '网络波动，正在重试... (' + pollErrors + '/' + maxPollErrors + ')';
+                    await sleep(5000);
+                    continue;
+                }
 
-            if (status === 'completed') return data.image_url;
-            if (status === 'failed') throw new Error(data.error || '生成失败');
+                pollErrors = 0; // 成功就清零
+                var data = await res.json();
+                var status = data.status;
 
-            var progress = data.progress || 0;
-            statusText.textContent = '正在生成中... ' + progress + '%';
-            await sleep(3000);
+                if (status === 'completed') return data.image_url;
+                if (status === 'failed') throw new Error(data.error || '生成失败');
+
+                var elapsed = Math.round((Date.now() - (deadline - timeoutSec * 1000)) / 1000);
+                var progress = data.progress || 0;
+                statusText.textContent = progress > 0
+                    ? '正在生成中... ' + progress + '%（已等待 ' + elapsed + 's）'
+                    : '正在生成中，请耐心等待...（已等待 ' + elapsed + 's）';
+
+            } catch (err) {
+                // 只有明确的业务失败才直接抛出
+                if (err.message === '生成失败' || err.message === '状态查询持续失败') {
+                    throw err;
+                }
+                // 网络错误：计入错误次数，继续重试
+                pollErrors++;
+                if (pollErrors >= maxPollErrors) throw new Error('网络连接不稳定，请检查后重试');
+                statusText.textContent = '网络波动，正在重试... (' + pollErrors + '/' + maxPollErrors + ')';
+            }
+
+            await sleep(4000);
         }
 
-        throw new Error('生成超时，请重试');
+        throw new Error('生成超时，任务可能仍在运行，可点击「重试」继续等待');
     }
 
     // ── 工具函数 ──────────────────────────────────────────────────────────

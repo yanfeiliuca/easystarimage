@@ -31,7 +31,10 @@
     var templateDescEl     = document.getElementById('templateDesc');
     var templateTagsEl     = document.getElementById('templateTags');
     var templateBadge      = document.getElementById('templateBadge');
+    var shotSection        = document.getElementById('shotSection');
+    var shotDropdown       = document.getElementById('shotDropdown');
     var selectedTemplateId = 'zhang_man_yu_17';
+    var selectedShot       = 1;
     var templateData       = null;
 
     // 每个插槽存储的 File 对象，null = 未上传
@@ -246,10 +249,31 @@
             span.textContent = tag;
             templateTagsEl.appendChild(span);
         });
+
+        // Populate shot dropdown based on template's shot count
+        populateShotDropdown(t.shotCount || 1);
+    }
+
+    function populateShotDropdown(count) {
+        shotDropdown.innerHTML = '';
+        for (var i = 1; i <= count; i++) {
+            var opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = '镜头 ' + i;
+            if (i === selectedShot) opt.selected = true;
+            shotDropdown.appendChild(opt);
+        }
+        // Reset selectedShot if out of range
+        if (selectedShot > count) selectedShot = 1;
+        shotSection.classList.remove('hidden');
     }
 
     templateDropdown.addEventListener('change', function() {
         selectTemplate(templateDropdown.value);
+    });
+
+    shotDropdown.addEventListener('change', function() {
+        selectedShot = parseInt(shotDropdown.value) || 1;
     });
 
     // Load templates on page start
@@ -308,7 +332,7 @@
                 body: JSON.stringify({
                     images: images,
                     template: selectedTemplateId,
-                    shot: 1
+                    shot: selectedShot
                 })
             });
 

@@ -587,7 +587,7 @@ High-end editorial style.
     id: "zhang_man_yu_01",
     name: `戛纳影后·盛装礼服风`,
     styleName: `戛纳影后·华丽礼服·高光时刻`,
-    category: `张曼玉·红毯与礼服`,
+    category: `张曼玉`,
     description: `欧洲顶级电影节红毯·高定礼服大片`,
     format: "zm_v1",
     tags: [`冷艳高贵`, `成熟自信`, `国际大牌气场`],
@@ -608,7 +608,7 @@ High-end editorial style.
     id: "zhang_man_yu_02",
     name: `都市现代·知性精英风`,
     styleName: `都市精英·现代知性·简约高级`,
-    category: `张曼玉·现代知性`,
+    category: `张曼玉`,
     description: `当代都市精英女性形象，现代商务知性`,
     format: "zm_v1",
     tags: [`自信独立`, `知性优雅`, `低调奢华`],
@@ -629,7 +629,7 @@ High-end editorial style.
     id: "zhang_man_yu_03",
     name: `90年代港风·复古胶片情绪`,
     styleName: `90年代港风·胶片复古·慵懒高级`,
-    category: `张曼玉·复古港风`,
+    category: `张曼玉`,
     description: `香港黄金时代商业写真，90年代经典港风`,
     format: "zm_v1",
     tags: [`慵懒高级`, `冷艳妩媚`, `情绪感十足`],
@@ -650,7 +650,7 @@ High-end editorial style.
     id: "zhang_man_yu_04",
     name: `芭蕾风·肢体优雅写真`,
     styleName: `芭蕾意境·肢体优雅·轻盈仙气`,
-    category: `张曼玉·优雅艺术`,
+    category: `张曼玉`,
     description: `舞蹈艺术写真，强调肢体线条与优雅姿态`,
     format: "zm_v1",
     tags: [`轻盈飘逸`, `古典优雅`, `仙气十足`],
@@ -671,7 +671,7 @@ High-end editorial style.
     id: "zhang_man_yu_05",
     name: `冷艳高级·时尚杂志封面`,
     styleName: `冷艳高级·杂志封面·极致气场`,
-    category: `张曼玉·高级杂志`,
+    category: `张曼玉`,
     description: `国际顶级时尚杂志封面，极致高级感`,
     format: "zm_v1",
     tags: [`冷艳神秘`, `气场强大`, `无懈可击的高级感`],
@@ -692,7 +692,7 @@ High-end editorial style.
     id: "zhang_man_yu_06",
     name: `慵懒露肩·性感写真风`,
     styleName: `慵懒性感·露肩写真·低调撩人`,
-    category: `张曼玉·慵懒自然`,
+    category: `张曼玉`,
     description: `成熟女性性感写真，低调而撩人`,
     format: "zm_v1",
     tags: [`慵懒妩媚`, `成熟性感`, `自信不刻意`],
@@ -713,7 +713,7 @@ High-end editorial style.
     id: "zhang_man_yu_07",
     name: `纯净白色·清新系`,
     styleName: `纯净白色·清新系`,
-    category: `张曼玉·清新纯净`,
+    category: `张曼玉`,
     description: `轻盈、干净、少女感中透着成熟的优雅`,
     format: "zm_v2",
     tags: [`纯净白色`, `清新淡雅`, `减法美学`],
@@ -734,7 +734,7 @@ High-end editorial style.
     id: "zhang_man_yu_08",
     name: `艺术气质·文艺写真风`,
     styleName: `艺术气质·文艺写真风`,
-    category: `张曼玉·文艺气质`,
+    category: `张曼玉`,
     description: `内敛深沉，若有所思，艺术家的冷静与热情并存`,
     format: "zm_v2",
     tags: [`文艺气质`, `知识分子美学`, `人文纪实质感`],
@@ -755,7 +755,7 @@ High-end editorial style.
     id: "zhang_man_yu_09",
     name: `成熟知性·中期风格`,
     styleName: `成熟知性·中期风格`,
-    category: `张曼玉·成熟知性`,
+    category: `张曼玉`,
     description: `自信从容，历经岁月沉淀的气场，不需证明的高级感`,
     format: "zm_v2",
     tags: [`成熟优雅`, `女性力量`, `国际化都市感`],
@@ -776,7 +776,7 @@ High-end editorial style.
     id: "zhang_man_yu_10",
     name: `花样年华·红色旗袍`,
     styleName: `花样年华·红色旗袍`,
-    category: `张曼玉·花样年华`,
+    category: `张曼玉`,
     description: `压抑的热烈，克制中涌动的情欲与哀愁，极度内敛的东方女性之美`,
     format: "zm_v2",
     tags: [`民国上海`, `旗袍文化`, `王家卫电影美学`],
@@ -797,7 +797,7 @@ High-end editorial style.
     id: "zhang_man_yu_11",
     name: `花样年华·蓝绿旗袍`,
     styleName: `花样年华·蓝绿旗袍`,
-    category: `张曼玉·花样年华`,
+    category: `张曼玉`,
     description: `比红旗袍更冷艳，带有疏离感与神秘感，克制中的优雅`,
     format: "zm_v2",
     tags: [`民国上海`, `孔雀蓝旗袍`, `王家卫冷色系电影美学`],
@@ -818,7 +818,7 @@ High-end editorial style.
     id: "zhang_man_yu_12",
     name: `花样年华·黑色旗袍`,
     styleName: `花样年华·黑色旗袍`,
-    category: `张曼玉·花样年华`,
+    category: `张曼玉`,
     description: `最克制最沉静的一款，黑色旗袍承载最深的悲与美，如送别`,
     format: "zm_v2",
     tags: [`终极东方优雅`, `黑旗袍`, `极致压抑美学`],
@@ -839,7 +839,7 @@ High-end editorial style.
     id: "zhang_man_yu_13",
     name: `Vogue China·极简现代风`,
     styleName: `Vogue China·极简现代风`,
-    category: `张曼玉·现代时尚`,
+    category: `张曼玉`,
     description: `冷静、自信、超越年龄的当代感，不迎合的高级`,
     format: "zm_v2",
     tags: [`国际时尚大刊`, `极简主义`, `当代女性力量美学`],
@@ -860,7 +860,7 @@ High-end editorial style.
     id: "zhang_man_yu_14",
     name: `Harper's Bazaar·封面大片风`,
     styleName: `Harper's Bazaar·封面大片风`,
-    category: `张曼玉·封面大片`,
+    category: `张曼玉`,
     description: `华丽而有故事感，比Vogue更具温度与叙事性，美得有情节`,
     format: "zm_v2",
     tags: [`高级时尚大刊`, `华丽精致`, `叙事性时装大片`],
@@ -881,7 +881,7 @@ High-end editorial style.
     id: "zhang_man_yu_15",
     name: `阮玲玉·民国复古造型`,
     styleName: `阮玲玉·民国复古造型`,
-    category: `张曼玉·民国复古`,
+    category: `张曼玉`,
     description: `沉郁而诗意，旧时代女性的悲情与光芒，如《阮玲玉》电影质感`,
     format: "zm_v2",
     tags: [`民国上海滩`, `1930年代老电影美学`, `黑白年代感`],
@@ -902,7 +902,7 @@ High-end editorial style.
     id: "zhang_man_yu_16",
     name: `戛纳红毯·华丽礼服风（二）`,
     styleName: `戛纳红毯·华丽礼服风（二）`,
-    category: `张曼玉·红毯礼服`,
+    category: `张曼玉`,
     description: `隆重而自然，不刻意的顶级明星气场，礼服与人融为一体`,
     format: "zm_v2",
     tags: [`国际电影节红毯`, `欧洲奢华`, `闪光灯下的从容`],
@@ -923,7 +923,7 @@ High-end editorial style.
     id: "zhang_man_yu_17",
     name: `Chanel广告·法式极简风`,
     styleName: `Chanel广告·法式极简风`,
-    category: `张曼玉·法式极简`,
+    category: `张曼玉`,
     description: `法国式的随性不费力之美，奢华而不张扬，简单到极致即是高级`,
     format: "zm_v2",
     tags: [`香奈儿品牌美学`, `法式优雅`, `极简奢华`],
@@ -944,7 +944,7 @@ High-end editorial style.
     id: "zhang_man_yu_18",
     name: `90年代初·甜美邻家风`,
     styleName: `90年代初·甜美邻家风`,
-    category: `张曼玉·甜美邻家`,
+    category: `张曼玉`,
     description: `青涩、甜美、无辜，刚出道的明星气质中透着少女纯真`,
     format: "zm_v2",
     tags: [`1990年代初港台甜美风`, `邻家少女`, `青春偶像初期形象`],
@@ -965,7 +965,7 @@ High-end editorial style.
     id: "zhang_man_yu_19",
     name: `警察故事时期·清纯清新风`,
     styleName: `警察故事时期·清纯清新风`,
-    category: `张曼玉·清纯清新`,
+    category: `张曼玉`,
     description: `纯真、清爽、带一点俏皮，是张曼玉最无邪时期的美`,
     format: "zm_v2",
     tags: [`1980年代末港片`, `清纯爱情喜剧`, `阳光少女感`],
@@ -986,7 +986,7 @@ High-end editorial style.
     id: "zhang_man_yu_20",
     name: `东方意境·水墨留白风`,
     styleName: `东方意境·水墨留白风`,
-    category: `张曼玉·东方意境`,
+    category: `张曼玉`,
     description: `宁静如湖，虚实相生，人与自然的哲学对话，不说话的深远`,
     format: "zm_v2",
     tags: [`中国水墨美学`, `诗意留白`, `东方禅意写真`],
@@ -1045,6 +1045,17 @@ const HTML = `<!DOCTYPE html>
                 </div>
                 <div class="template-tags" id="templateTags"></div>
             </div>
+        </section>
+
+        <!-- 镜头选择 -->
+        <section class="shot-select-section hidden" id="shotSection">
+            <div class="shot-select-wrapper">
+                <label class="shot-select-label" for="shotDropdown">选择镜头</label>
+                <select class="shot-dropdown" id="shotDropdown">
+                    <option value="1">镜头 1</option>
+                </select>
+            </div>
+            <p class="shot-select-hint" id="shotHint">每个模板包含多个不同构图和场景的镜头</p>
         </section>
 
         <!-- 上传区：三张照片 -->
@@ -1305,6 +1316,50 @@ body {
     font-weight: 600;
     color: var(--gray-800);
     font-style: normal;
+}
+
+/* ── Shot Select ─────────────────────────────────────────────────────────── */
+.shot-select-section { margin-bottom: 1.5rem; }
+
+.shot-select-wrapper { margin-bottom: 0.5rem; }
+
+.shot-select-label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--gray-600);
+    margin-bottom: 0.35rem;
+    letter-spacing: 0.03em;
+}
+
+.shot-dropdown {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.88rem;
+    font-family: var(--font-sans);
+    color: var(--gray-800);
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999893' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 12px;
+    transition: border-color 0.2s;
+}
+
+.shot-dropdown:focus {
+    outline: none;
+    border-color: var(--gold);
+}
+
+.shot-select-hint {
+    font-size: 0.7rem;
+    color: var(--gray-500);
+    margin-top: 0.3rem;
 }
 
 /* ── Template Info Card ─────────────────────────────────────────────────── */
@@ -1710,7 +1765,10 @@ const JS = `/**
     var templateDescEl     = document.getElementById('templateDesc');
     var templateTagsEl     = document.getElementById('templateTags');
     var templateBadge      = document.getElementById('templateBadge');
+    var shotSection        = document.getElementById('shotSection');
+    var shotDropdown       = document.getElementById('shotDropdown');
     var selectedTemplateId = 'zhang_man_yu_17';
+    var selectedShot       = 1;
     var templateData       = null;
 
     // 每个插槽存储的 File 对象，null = 未上传
@@ -1925,10 +1983,31 @@ const JS = `/**
             span.textContent = tag;
             templateTagsEl.appendChild(span);
         });
+
+        // Populate shot dropdown based on template's shot count
+        populateShotDropdown(t.shotCount || 1);
+    }
+
+    function populateShotDropdown(count) {
+        shotDropdown.innerHTML = '';
+        for (var i = 1; i <= count; i++) {
+            var opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = '镜头 ' + i;
+            if (i === selectedShot) opt.selected = true;
+            shotDropdown.appendChild(opt);
+        }
+        // Reset selectedShot if out of range
+        if (selectedShot > count) selectedShot = 1;
+        shotSection.classList.remove('hidden');
     }
 
     templateDropdown.addEventListener('change', function() {
         selectTemplate(templateDropdown.value);
+    });
+
+    shotDropdown.addEventListener('change', function() {
+        selectedShot = parseInt(shotDropdown.value) || 1;
     });
 
     // Load templates on page start
@@ -1987,7 +2066,7 @@ const JS = `/**
                 body: JSON.stringify({
                     images: images,
                     template: selectedTemplateId,
-                    shot: 1
+                    shot: selectedShot
                 })
             });
 
@@ -2210,8 +2289,7 @@ function buildPrompt(templateId, shot, imageCount) {
     }
 
     var shotPrompt = template.shots[String(shot)] || template.shots['1'] || '';
-    var faceSegment = buildFaceSegment(imageCount);
-    var parts = [faceSegment, shotPrompt];
+    var parts = [shotPrompt];
     if (template.commonBase) parts.push(template.commonBase);
     parts.push(buildQualitySegment());
     if (template.negativeConstraints) {

@@ -1160,9 +1160,11 @@ async function queryEvoLinkTask(taskId, apiKey) {
 
     if (status === 'completed') {
         // 兼容多种响应结构
-        const results = data.data || data.results || data.output?.data || [];
+        // EvoLink 可能返回: result_data[{url}], results["url字符串"], data[{url}], 或顶层 url/image_url
+        const results = data.result_data || data.data || data.results || data.output?.data || [];
         const first = Array.isArray(results) ? results[0] : results;
-        const url = (first && (first.url || first.image_url))
+        const url = (typeof first === 'string') ? first
+            : (first && (first.url || first.image_url))
             || data.url || data.image_url || data.output_url || null;
         return { status: 'completed', image_url: url, _raw: data };
     }

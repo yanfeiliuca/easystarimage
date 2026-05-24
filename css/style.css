@@ -84,13 +84,56 @@ body {
 }
 
 /* ── Template Card ────────────────────────────────────────────────────────── */
-.template-card {
+/* ── Template Select ─────────────────────────────────────────────────────── */
+.template-select-section { margin-bottom: 1.5rem; }
+
+.template-select-wrapper { margin-bottom: 0.75rem; }
+
+.template-select-label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--gray-600);
+    margin-bottom: 0.35rem;
+    letter-spacing: 0.03em;
+}
+
+.template-dropdown {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    font-size: 0.95rem;
+    font-family: var(--font-sans);
+    color: var(--gray-800);
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999893' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 12px;
+    transition: border-color 0.2s;
+}
+
+.template-dropdown:focus {
+    outline: none;
+    border-color: var(--gold);
+}
+
+.template-dropdown optgroup {
+    font-weight: 600;
+    color: var(--gray-800);
+    font-style: normal;
+}
+
+/* ── Template Info Card ─────────────────────────────────────────────────── */
+.template-info-card {
     background: var(--gray-100);
     border: 1px solid var(--gray-200);
     border-radius: var(--radius);
     padding: 1.25rem;
-    margin-bottom: 1.5rem;
-    position: relative;
 }
 
 .template-badge {

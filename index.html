@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EasyStarImage · AI法式写真</title>
+    <title>EasyStarImage · 易星写真</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
 <!-- Hero -->
 <header class="hero">
     <h1 class="hero-title">EasyStarImage</h1>
-    <p class="hero-sub">上传 1-3 张照片，生成你的 AI 法式大片</p>
+    <p class="hero-sub">上传 1-3 张照片，生成你的 AI 影楼极写真</p>
 </header>
 
 <main class="container">
@@ -20,18 +20,21 @@
     <!-- ── 左栏：输入 ── -->
     <div class="panel-input">
 
-        <!-- 模板展示 -->
-        <section class="template-card" id="templateSection">
-            <div class="template-badge">首发模板</div>
-            <div class="template-info">
-                <h2 class="template-name">Chanel · 法式极简风</h2>
-                <p class="template-desc">香奈儿品牌美学，巴黎公寓午后窗光，珍珠与斜纹软呢的永恒优雅。</p>
+        <!-- 模板选择 -->
+        <section class="template-select-section" id="templateSection">
+            <div class="template-select-wrapper">
+                <label class="template-select-label" for="templateDropdown">选择写真风格</label>
+                <select class="template-dropdown" id="templateDropdown">
+                    <option value="">加载中...</option>
+                </select>
             </div>
-            <div class="template-tags">
-                <span>黑白经典配色</span>
-                <span>无妆感底妆</span>
-                <span>法式自然窗光</span>
-                <span>珍珠配饰</span>
+            <div class="template-info-card hidden" id="templateInfoCard">
+                <div class="template-badge" id="templateBadge">当前选择</div>
+                <div class="template-info">
+                    <h2 class="template-name" id="templateName">Chanel · 法式极简风</h2>
+                    <p class="template-desc" id="templateDesc"></p>
+                </div>
+                <div class="template-tags" id="templateTags"></div>
             </div>
         </section>
 
@@ -105,7 +108,7 @@
         <!-- 生成按钮 -->
         <section class="action-section">
             <button class="btn-generate" id="generateBtn" disabled>
-                开始生成我的法式大片
+                一键生成写真
             </button>
             <p class="privacy-note">你的照片仅用于本次生成，不会公开或保存</p>
         </section>

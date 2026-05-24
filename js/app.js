@@ -24,6 +24,16 @@
     var resultError    = document.getElementById('resultError');
     var retryBtn       = document.getElementById('retryBtn');
 
+    // Template select elements
+    var templateDropdown   = document.getElementById('templateDropdown');
+    var templateInfoCard   = document.getElementById('templateInfoCard');
+    var templateNameEl     = document.getElementById('templateName');
+    var templateDescEl     = document.getElementById('templateDesc');
+    var templateTagsEl     = document.getElementById('templateTags');
+    var templateBadge      = document.getElementById('templateBadge');
+    var selectedTemplateId = 'zhang_man_yu_17';
+    var templateData       = null;
+
     // 每个插槽存储的 File 对象，null = 未上传
     var slotFiles = [null, null, null];
 
@@ -173,6 +183,78 @@
         setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1600);
     }
 
+    // ── 模板选择 ──────────────────────────────────────────────────────────
+
+    async function loadTemplates() {
+        try {
+            var res = await fetch(API_BASE + '/templates');
+            if (!res.ok) throw new Error('Failed to load templates');
+            templateData = await res.json();
+            populateTemplateDropdown();
+            selectTemplate(selectedTemplateId);
+        } catch (err) {
+            console.error('Template load failed:', err);
+            // Fallback: show default
+            templateDropdown.innerHTML = '<option value="zhang_man_yu_17">Chanel·法式极简风</option>';
+            templateInfoCard.classList.remove('hidden');
+        }
+    }
+
+    function populateTemplateDropdown() {
+        if (!templateData) return;
+        templateDropdown.innerHTML = '';
+        var ids = Object.keys(templateData).sort();
+
+        // Group by category
+        var categories = {};
+        ids.forEach(function(id) {
+            var t = templateData[id];
+            var cat = t.category || 'Other';
+            if (!categories[cat]) categories[cat] = [];
+            categories[cat].push(id);
+        });
+
+        Object.keys(categories).forEach(function(cat) {
+            var group = document.createElement('optgroup');
+            group.label = cat;
+            categories[cat].forEach(function(id) {
+                var t = templateData[id];
+                var opt = document.createElement('option');
+                opt.value = id;
+                opt.textContent = t.name + ' (' + t.shotCount + ' 镜头)';
+                if (id === selectedTemplateId) opt.selected = true;
+                group.appendChild(opt);
+            });
+            templateDropdown.appendChild(group);
+        });
+    }
+
+    function selectTemplate(id) {
+        selectedTemplateId = id;
+        if (!templateData) return;
+        var t = templateData[id];
+        if (!t) return;
+
+        templateInfoCard.classList.remove('hidden');
+        templateBadge.textContent = t.category || '当前选择';
+        templateNameEl.textContent = t.name;
+        templateDescEl.textContent = t.description;
+
+        templateTagsEl.innerHTML = '';
+        (t.tags || []).forEach(function(tag) {
+            var span = document.createElement('span');
+            span.textContent = tag;
+            templateTagsEl.appendChild(span);
+        });
+    }
+
+    templateDropdown.addEventListener('change', function() {
+        selectTemplate(templateDropdown.value);
+    });
+
+    // Load templates on page start
+    loadTemplates();
+
     // ── 生成流程 ──────────────────────────────────────────────────────────
     generateBtn.addEventListener('click', startGeneration);
 
@@ -225,7 +307,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     images: images,
-                    template: 'chanel_17',
+                    template: selectedTemplateId,
                     shot: 1
                 })
             });
@@ -374,7 +456,10 @@
                 var blobUrl = URL.createObjectURL(blob);
                 var a = document.createElement('a');
                 a.href = blobUrl;
-                a.download = 'easystarimage_chanel.jpg';
+                var templateName = templateData && templateData[selectedTemplateId]
+                    ? templateData[selectedTemplateId].name.replace(/[^a-zA-Z0-9一-鿿]/g, '_')
+                    : 'chanel';
+                a.download = 'easystarimage_' + templateName + '.jpg';
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);

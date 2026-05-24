@@ -1020,7 +1020,7 @@ const HTML = `<!DOCTYPE html>
 <!-- Hero -->
 <header class="hero">
     <h1 class="hero-title">EasyStarImage</h1>
-    <p class="hero-sub">上传 1-3 张照片，生成你的 AI 影楼极写真</p>
+    <p class="hero-sub">上传 1-3 张照片，生成你的 AI 影楼级写真</p>
 </header>
 
 <main class="container">
@@ -1169,7 +1169,7 @@ const HTML = `<!DOCTYPE html>
 
 <footer class="footer">
     <p>你的照片仅用于本次生成，不会公开或保存。风格参考仅供展示。</p>
-    <p class="footer-by">by CC</p>
+    <p class="footer-by">by EasyStarImage on CC</p>
 </footer>
 
 <script src="js/app.js"></script>
@@ -1784,7 +1784,7 @@ const JS = `/**
 
     // ── 设置插槽文件 ──────────────────────────────────────────────────────
     function setSlotFile(idx, file) {
-        if (!file.type.match(/^image\/(jpeg|png|webp)$/)) {
+        if (!file.type.match(/^image\\/(jpeg|png|webp)$/)) {
             showToast('请上传 JPG、PNG 或 WEBP 格式的照片');
             return;
         }

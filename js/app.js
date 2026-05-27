@@ -389,14 +389,8 @@
         resultStatus.classList.add('hidden');
         spinner.classList.add('hidden');
         resultImgArea.classList.remove('hidden');
-        // img 标签天然支持跨域显示，不需要 crossorigin 属性
-        resultImage.src = imageUrl;
-        // 若直连失败（URL 需要签名/已过期），回退到 Worker 代理
-        resultImage.onerror = function () {
-            if (resultImage.src.indexOf('/api/proxy') === -1) {
-                resultImage.src = '/api/proxy?url=' + encodeURIComponent(imageUrl);
-            }
-        };
+        // 始终通过 Worker 代理加载——代理带 API Key、规避跨域，两个问题一起解决
+        resultImage.src = '/api/proxy?url=' + encodeURIComponent(imageUrl);
         downloadBtn.onclick = function () { downloadImage(imageUrl); };
     }
 

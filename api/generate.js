@@ -5,24 +5,31 @@
  *   GET  /              — 前端页面
  *   GET  /css/style.css  — 样式
  *   GET  /js/app.js      — 前端逻辑
- *   POST /api/generate   — 接收用户照片 + 模板选择 → 提交 EvoLink 任务 → 返回 task_id
- *   GET  /api/status/:id — 代理 EvoLink 任务状态查询
+ *   POST /api/generate   — 接收用户照片 + 模板选择 → 提交 InstantID 任务 → 返回 task_id
+ *   GET  /api/status/:id — 轮询 Replicate 任务状态
  *
  * 部署：
  *   wrangler deploy
- *   设置 secret: wrangler secret put EVOLINK_API_KEY
+ *   设置 secret: wrangler secret put REPLICATE_API_TOKEN
  *
  * 约束：
- *   - API Key 仅存于 Worker 环境变量，不暴露给前端
+ *   - API Token 仅存于 Worker 环境变量，不暴露给前端
  *   - 用户照片仅用于本次 API 调用，Worker 不存储
  */
 
 // ── 配置 ──────────────────────────────────────────────────────────────────────
-const EVOLINK_BASE = 'https://api.evolink.ai';
-const MODEL = 'gpt-image-2';
-const QUALITY = 'medium';     // low / medium / high（high 约是 medium 的 4 倍价格）
-const SIZE = '3:4';           // 比例，配合 RESOLUTION 使用
-const RESOLUTION = '1K';      // 1K / 2K / 4K
+// Replicate API（已被 Cloudflare 收购，可直连或经 Cloudflare AI Gateway 代理）
+// 直连 Replicate：
+const REPLICATE_BASE = 'https://api.replicate.com/v1';
+// 若已在 Cloudflare Dashboard 建立 AI Gateway，可改为：
+// const REPLICATE_BASE = 'https://gateway.ai.cloudflare.com/v1/{account_id}/{gateway_id}/replicate';
+
+// InstantID 模型（zsxkib/instant-id，零样本人脸保真生成）
+const INSTANTID_VERSION = 'c98b2e7a196828d00955767813b81fc05c5c9b294c670c6d147d545fed4ceecf';
+
+// 输出尺寸：竖版人像
+const OUTPUT_WIDTH  = 832;
+const OUTPUT_HEIGHT = 1216;
 
 
 // ── 模板注册表 ─────────────────────────────────────────────────────────────────
@@ -2090,7 +2097,7 @@ const JS = `/**
 
         } catch (err) {
             console.error(err);
-            showError();
+            showError(err.message);
         }
 
         setGeneratingState(false);
@@ -2113,7 +2120,7 @@ const JS = `/**
             showResult(imageUrl);
         } catch (err) {
             console.error(err);
-            showError();
+            showError(err.message);
         }
 
         setGeneratingState(false);
@@ -2123,28 +2130,19 @@ const JS = `/**
         resultStatus.classList.add('hidden');
         spinner.classList.add('hidden');
         resultImgArea.classList.remove('hidden');
-        // img 标签天然支持跨域显示，不需要 crossorigin 属性
-        resultImage.src = imageUrl;
-        // 若直连失败（URL 需要签名/已过期），回退到 Worker 代理
-        resultImage.onerror = function () {
-            if (resultImage.src.indexOf('/api/proxy') === -1) {
-                resultImage.src = '/api/proxy?url=' + encodeURIComponent(imageUrl);
-            }
-        };
+        // 始终通过 Worker 代理加载——代理带 API Key、规避跨域，两个问题一起解决
+        resultImage.src = '/api/proxy?url=' + encodeURIComponent(imageUrl);
         downloadBtn.onclick = function () { downloadImage(imageUrl); };
     }
 
-    function showError() {
+    function showError(msg) {
         resultStatus.classList.add('hidden');
         spinner.classList.add('hidden');
         resultError.classList.remove('hidden');
-        // 如果有任务ID，提示用户可以重试而不是重新提交
-        if (currentTaskId) {
-            document.querySelector('.error-text').textContent =
-                '连接中断，任务可能仍在生成中，点击「重试」继续等待';
-        } else {
-            document.querySelector('.error-text').textContent = '生成失败，请稍后重试';
-        }
+        var text = msg || (currentTaskId
+            ? '连接中断，任务可能仍在生成中，点击「重试」继续等待'
+            : '生成失败，请稍后重试');
+        document.querySelector('.error-text').textContent = text;
     }
 
     async function pollTask(taskId, timeoutSec) {
@@ -2244,121 +2242,108 @@ const JS = `/**
 // by CC
 `;
 
-// ── 通用提示词构建 ──────────────────────────────────────────────────────────
+// ── 提示词构建 ────────────────────────────────────────────────────────────────
+// InstantID 通过图片直接锁定人脸，prompt 只需描述场景/风格，不再需要文字面部描述
 
-function buildFaceSegment(imageCount) {
-    var multiRefNote = imageCount >= 3
-        ? 'MULTI-ANGLE REFERENCE: Three photos (front, side, and alternate angle) of this person have been provided. These show the SAME individual from different viewpoints. Use ALL three references to reconstruct an accurate 3D understanding of this person\'s facial structure — do NOT average them into a generic face.'
-        : imageCount === 2
-        ? 'TWO-ANGLE REFERENCE: Two photos of this person from different angles have been provided. Use both to better understand the 3D facial structure.'
-        : '';
-
-    return 'SUBJECT IDENTITY (DO NOT ALTER FACE):\n' +
-'An Asian woman with oval face shape and soft jawline,\n' +
-'almond-shaped medium-large dark brown eyes with warm gentle gaze,\n' +
-'straight nose with rounded tip, M-shaped natural lips with pale rosy pink tone,\n' +
-'warm neutral fair skin with smooth natural texture and subtle glow,\n' +
-'shoulder-length straight dark brown hair with slight natural wave at ends,\n' +
-'youthful appearance in late twenties with gentle intellectual aura.\n' +
-'Distinctive features: expressive almond eyes, defined cheekbones, warm serene expression.\n' +
-'\n' +
-multiRefNote + '\n' +
-'\n' +
-'CRITICAL: The generated image MUST look like THIS SPECIFIC PERSON.\n' +
-'Multiple reference photos have been provided from different angles — use them to preserve the true 3D facial structure.\n' +
-'Preserve exact face shape, eye shape, nose, lips, and skin tone in ALL angles.\n' +
-'This is NOT a celebrity face substitute.';
-}
-
-function buildQualitySegment() {
-    return 'QUALITY & CONSISTENCY REQUIREMENTS:\n' +
-'Ultra-high definition, 8K resolution, luxury brand commercial quality,\n' +
-'Natural skin texture with subtle realistic details,\n' +
-'Anatomically correct body proportions,\n' +
-'Face must remain this specific person — NO face substitution,\n' +
-'Lighting consistent across face, body, and background,\n' +
-'No plastic or waxy skin appearance.';
-}
-
-function buildPrompt(templateId, shot, imageCount) {
+function buildPrompt(templateId, shot) {
     shot = shot || 1;
-    imageCount = imageCount || 1;
     var template = TEMPLATES[templateId];
-    if (!template) {
-        throw new Error('Unknown template: ' + templateId);
-    }
+    if (!template) throw new Error('Unknown template: ' + templateId);
 
     var shotPrompt = template.shots[String(shot)] || template.shots['1'] || '';
     var parts = [shotPrompt];
+
     if (template.commonBase) parts.push(template.commonBase);
-    parts.push(buildQualitySegment());
-    if (template.negativeConstraints) {
-        parts.push('NEGATIVE CONSTRAINTS:\n' + template.negativeConstraints);
-    }
+
+    parts.push(
+        'Ultra-high definition, photorealistic, 8K quality, ' +
+        'natural skin texture, correct anatomy, professional commercial photography.'
+    );
 
     return parts.join('\n\n');
 }
 
-// ── EvoLink API 封装 ─────────────────────────────────────────────────────────
+function buildNegativePrompt(templateId) {
+    var template = TEMPLATES[templateId];
+    var base = 'deformed face, distorted features, plastic skin, oversmoothed, blurry, ' +
+               'watermark, extra limbs, wrong anatomy, low quality, overexposed';
+    if (template && template.negativeConstraints) {
+        return template.negativeConstraints + ', ' + base;
+    }
+    return base;
+}
 
-async function submitEvoLinkTask(prompt, apiKey) {
-    const res = await fetch(EVOLINK_BASE + '/v1/images/generations', {
+// ── Replicate / InstantID API 封装 ───────────────────────────────────────────
+
+// 提交预测任务
+// faceImageDataUri: 用户上传的第一张照片的 base64 data URI（InstantID 的人脸参考图）
+async function submitReplicateTask(faceImageDataUri, prompt, negativePrompt, apiKey) {
+    // 用模型名称直接调用（自动使用最新版本，无需硬写 version hash）
+    const payload = {
+        input: {
+            image:                          faceImageDataUri,
+            prompt:                         prompt,
+            negative_prompt:                negativePrompt,
+            width:                          OUTPUT_WIDTH,
+            height:                         OUTPUT_HEIGHT,
+            guidance_scale:                 7,
+            num_inference_steps:            30,
+            ip_adapter_scale:               0.8,
+            controlnet_conditioning_scale:  0.8,
+            sdxl_weights:                   'protovision-xl-high-fidel',
+            output_format:                  'jpeg',
+            output_quality:                 90,
+        },
+    };
+
+    // 使用 /models/{owner}/{name}/predictions 端点，自动用最新版本
+    const res = await fetch(REPLICATE_BASE + '/models/zsxkib/instant-id/predictions', {
         method: 'POST',
         headers: {
             'Authorization': 'Bearer ' + apiKey,
             'Content-Type': 'application/json',
+            'Prefer': 'wait=5',  // 最多等 5 秒同步返回，超时则转异步轮询
         },
-        body: JSON.stringify({
-            model: MODEL,
-            prompt: prompt,
-            size: SIZE,
-            resolution: RESOLUTION,
-            quality: QUALITY,
-        }),
+        body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
         const err = await res.text();
-        throw new Error('EvoLink submit failed: ' + err.slice(0, 200));
+        // 返回完整错误信息，便于调试
+        throw new Error('Replicate submit failed [' + res.status + ']: ' + err.slice(0, 500));
     }
 
     const data = await res.json();
-    return data.id;
+    if (!data.id) {
+        throw new Error('Replicate returned no prediction ID: ' + JSON.stringify(data).slice(0, 300));
+    }
+    return data.id;  // prediction ID，用于轮询
 }
 
-async function queryEvoLinkTask(taskId, apiKey) {
-    const res = await fetch(EVOLINK_BASE + '/v1/tasks/' + taskId, {
+// 查询预测任务状态
+async function queryReplicateTask(predictionId, apiKey) {
+    const res = await fetch(REPLICATE_BASE + '/predictions/' + predictionId, {
         headers: { 'Authorization': 'Bearer ' + apiKey },
     });
 
     if (!res.ok) {
-        throw new Error('EvoLink status query failed');
+        throw new Error('Replicate status query failed');
     }
 
     const data = await res.json();
-    const status = data.status;
 
-    if (status === 'completed') {
-        // 兼容多种响应结构
-        // EvoLink 可能返回: result_data[{url}], results["url字符串"], data[{url}], 或顶层 url/image_url
-        const results = data.result_data || data.data || data.results || data.output?.data || [];
-        const first = Array.isArray(results) ? results[0] : results;
-        const url = (typeof first === 'string') ? first
-            : (first && (first.url || first.image_url))
-            || data.url || data.image_url || data.output_url || null;
-        return { status: 'completed', image_url: url, _raw: data };
+    if (data.status === 'succeeded') {
+        // output 是一个数组，第一个元素是图片 URL
+        const url = Array.isArray(data.output) ? data.output[0] : data.output;
+        return { status: 'completed', image_url: url };
     }
 
-    if (status === 'failed') {
-        const errMsg = (data.error && data.error.message) || 'Unknown error';
-        return { status: 'failed', error: errMsg };
+    if (data.status === 'failed' || data.status === 'canceled') {
+        return { status: 'failed', error: data.error || 'Generation failed' };
     }
 
-    // pending / processing
-    return {
-        status: status,
-        progress: data.progress || 0,
-    };
+    // starting / processing
+    return { status: data.status, progress: 0 };
 }
 
 // ── CORS 头 ──────────────────────────────────────────────────────────────────
@@ -2399,10 +2384,10 @@ function serveStatic(content, contentType) {
 async function handleRequest(request, env) {
     const url = new URL(request.url);
     const path = url.pathname;
-    const apiKey = env.EVOLINK_API_KEY;
+    const apiKey = env.REPLICATE_API_TOKEN;
 
     if (!apiKey) {
-        return jsonResponse({ error: 'Server config error: API key not set' }, 500);
+        return jsonResponse({ error: 'Server config error: REPLICATE_API_TOKEN not set' }, 500);
     }
 
     // CORS preflight
@@ -2447,12 +2432,23 @@ async function handleRequest(request, env) {
         try {
             const body = await request.json();
             const templateId = body.template || 'zhang_man_yu_17';
-            const shot = body.shot || 1;
-            const images = body.images || [];
-            const imageCount = images.length || 1;
+            const shot       = body.shot || 1;
+            const images     = body.images || [];  // base64 data URI 数组
 
-            const prompt = buildPrompt(templateId, shot, imageCount);
-            const taskId = await submitEvoLinkTask(prompt, apiKey);
+            if (images.length === 0) {
+                return jsonResponse({ error: '请至少上传一张照片' }, 400);
+            }
+
+            // Step 1: 构建风格提示词（场景 + 品质要求）
+            const prompt         = buildPrompt(templateId, shot);
+            const negativePrompt = buildNegativePrompt(templateId);
+
+            // Step 2: 取第一张照片作为 InstantID 人脸参考图
+            //         InstantID 直接用图片锁定人脸，无需文字面部描述
+            const faceImage = images[0];
+
+            // Step 3: 提交 Replicate InstantID 任务
+            const taskId = await submitReplicateTask(faceImage, prompt, negativePrompt, apiKey);
 
             return jsonResponse({ task_id: taskId });
         } catch (err) {
@@ -2465,32 +2461,55 @@ async function handleRequest(request, env) {
     if (statusMatch && request.method === 'GET') {
         try {
             const taskId = statusMatch[1];
-            const result = await queryEvoLinkTask(taskId, apiKey);
+            const result = await queryReplicateTask(taskId, apiKey);
             return jsonResponse(result);
         } catch (err) {
             return jsonResponse({ error: err.message }, 500);
         }
     }
 
-    // GET /api/proxy?url=... — 代理外部图片，解决跨域下载问题
+    // GET /api/proxy?url=... — 代理外部图片，解决跨域显示和下载问题
     if (path === '/api/proxy' && request.method === 'GET') {
         const imageUrl = url.searchParams.get('url');
         if (!imageUrl) return jsonResponse({ error: 'Missing url param' }, 400);
         try {
-            const imgRes = await fetch(imageUrl);
-            if (!imgRes.ok) return jsonResponse({ error: 'Upstream image not available' }, 502);
+            // Replicate 生成的图片 URL 通常是公开可访问的，无需鉴权
+            // 保留鉴权头以防 Replicate 私有 URL 场景
+            const fetchHeaders = {};
+            if (imageUrl.includes('replicate.delivery') || imageUrl.includes('replicate.com')) {
+                fetchHeaders['Authorization'] = 'Bearer ' + apiKey;
+            }
+            const imgRes = await fetch(imageUrl, { headers: fetchHeaders });
+            if (!imgRes.ok) {
+                return jsonResponse({ error: 'Upstream ' + imgRes.status + ': ' + imageUrl.slice(0, 120) }, 502);
+            }
             const contentType = imgRes.headers.get('Content-Type') || 'image/jpeg';
             return new Response(imgRes.body, {
                 status: 200,
                 headers: {
                     'Content-Type': contentType,
-                    'Content-Disposition': 'attachment; filename="easystarimage_chanel.jpg"',
+                    'Content-Disposition': 'attachment; filename="easystarimage.jpg"',
                     'Cache-Control': 'private, max-age=300',
                     ...corsHeaders(),
                 },
             });
         } catch (err) {
             return jsonResponse({ error: 'Proxy failed: ' + err.message }, 502);
+        }
+    }
+
+    // GET /api/debug/:taskId — 返回 Replicate 原始响应（调试用，部署后可删除）
+    const debugMatch = path.match(/^\/api\/debug\/(.+)$/);
+    if (debugMatch && request.method === 'GET') {
+        try {
+            const taskId = debugMatch[1];
+            const res = await fetch(REPLICATE_BASE + '/predictions/' + taskId, {
+                headers: { 'Authorization': 'Bearer ' + apiKey },
+            });
+            const raw = await res.json();
+            return jsonResponse({ http_status: res.status, body: raw });
+        } catch (err) {
+            return jsonResponse({ error: err.message }, 500);
         }
     }
 
